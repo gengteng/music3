@@ -1,0 +1,7 @@
+[package]
+name = "music3-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+music3-common = { path = "../common" }

@@ -1,0 +1,9 @@
+[package]
+name = "music3-shuttle"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+music3-server = { path = "../server" }
+shuttle-axum = "0.47.0"
+shuttle-runtime = "0.47.0"

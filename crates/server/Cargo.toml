@@ -1,0 +1,10 @@
+[package]
+name = "music3-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.5"
+thiserror = { workspace = true }
+music3-common = { path = "../common" }
+solana-client = "2.0.8"
