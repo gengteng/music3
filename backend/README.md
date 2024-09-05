@@ -1,6 +1,6 @@
-# 仓库结构
+# Music3 backend
 
-该仓库为一个 Rust 工程，使用工作空间（workspace）管理多个子工程。包括：
+该 Rust 项目使用工作空间（workspace）管理多个子项目。包括：
 
 * [crates/common](../crates/common): 库，前后端公用的公共模块，包括参数、模型结构定义，以及共用的工具函数等。
 * [crates/server](../crates/server): 库，后端的主要业务逻辑，不包括启动器。
