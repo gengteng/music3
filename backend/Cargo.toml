@@ -11,6 +11,8 @@ serde_json = "1"
 thiserror = "1"
 anyhow = "1"
 tokio = "1"
+chrono = { version = "0.4" }
+chrono-tz = "0.9"
 
 [patch.crates-io.curve25519-dalek]
 # This patch is needed to fix this issue:

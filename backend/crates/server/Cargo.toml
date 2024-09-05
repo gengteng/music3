@@ -2,9 +2,14 @@
 name = "music3-server"
 version = "0.1.0"
 edition = "2021"
+license = "MIT or Apache-2.0"
 
 [dependencies]
 axum = "0.7.5"
+axum-valid = { version = "0.19.0", features = ["validify", "basic"], default-features = false }
 thiserror = { workspace = true }
 music3-common = { path = "../common" }
 solana-client = "2.0.8"
+solana-sdk = "2.0.8"
+jsonwebtoken = "9.3.0"
+chrono = { workspace = true }
