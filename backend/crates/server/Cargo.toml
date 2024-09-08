@@ -6,10 +6,20 @@ license = "MIT or Apache-2.0"
 
 [dependencies]
 axum = "0.7.5"
-axum-valid = { version = "0.19.0", features = ["validify", "basic"], default-features = false }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
+axum-valid = { version = "0.20.0", features = ["validify", "basic", "aide"], default-features = false }
 thiserror = { workspace = true }
+anyhow = { workspace = true }
 music3-common = { path = "../common" }
 solana-client = "2.0.8"
 solana-sdk = "2.0.8"
 jsonwebtoken = "9.3.0"
 chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+aide = "0.13.4"
+config = "0.14.0"
+base64 = "0.22.1"
+rand = "0.8.5"
+hmac = "0.12.1"
+sha2 = "0.10.8"
