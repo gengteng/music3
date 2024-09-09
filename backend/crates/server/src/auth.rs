@@ -38,7 +38,7 @@ impl Authorizer {
 
     /// Create a new authorizer
     pub fn new(config: AuthConfig) -> anyhow::Result<Self> {
-        let jwt = jwt::Jwt::try_from(&config.jwt)?;
+        let jwt = jwt::Jwt::from(&config.jwt);
         let hmac = Arc::new(hmac::Hmac::try_from(config.hmac_secret.as_bytes())?);
         Ok(Self { jwt, hmac })
     }
