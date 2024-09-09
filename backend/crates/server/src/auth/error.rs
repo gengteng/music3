@@ -23,6 +23,9 @@ pub enum Error {
     /// Invalid duration
     #[error("Invalid duration, expected: [0, {0}], got: {1}")]
     InvalidDuration(usize, usize),
+    /// Invalid timestamp
+    #[error("Invalid Timestamp")]
+    InvalidTimestamp,
 }
 
 /// Result type for the auth module

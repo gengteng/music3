@@ -14,6 +14,7 @@ use crate::auth::param::ChallengeRequest;
 use axum::extract::State;
 use axum::Json;
 use error::Result;
+use jsonwebtoken::get_current_timestamp;
 use std::sync::Arc;
 
 pub mod claim;
@@ -52,6 +53,11 @@ impl Authorizer {
         param::ChallengeResponse { hmac, timestamp }
     }
 
+    /// Check if the timestamp is valid
+    pub fn is_valid_timestamp(&self, timestamp: usize) -> bool {
+        timestamp + self.jwt.timestamp_timeout_sec() >= get_current_timestamp() as usize
+    }
+
     /// Authorize the request
     pub fn authorize(&self, request: &param::AuthRequest) -> Result<param::AuthResponse> {
         if self.jwt.max_duration_sec() < request.duration {
@@ -59,6 +65,12 @@ impl Authorizer {
                 request.duration,
                 self.jwt.max_duration_sec(),
             ));
+        }
+        if !self.is_valid_timestamp(request.timestamp) {
+            return Err(error::Error::InvalidTimestamp);
+        }
+        if !request.verify() {
+            return Err(error::Error::InvalidSignature);
         }
         let claim = Claim::create(request.pub_key.to_string(), request.duration);
         let jwt = self.jwt.sign(&claim)?;

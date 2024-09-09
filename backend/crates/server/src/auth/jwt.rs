@@ -23,6 +23,8 @@ pub struct JwtConfig {
     pub secret_base64: String,
     /// Max duration in seconds
     pub max_duration_sec: usize,
+    /// Timestamp timeout
+    pub timestamp_timeout_sec: usize,
 }
 
 impl Default for JwtConfig {
@@ -31,6 +33,7 @@ impl Default for JwtConfig {
             audience: "music3".to_string(),
             secret_base64: base64::engine::general_purpose::STANDARD.encode("music3-jwt-secret"),
             max_duration_sec: 86400,
+            timestamp_timeout_sec: 120,
         }
     }
 }
@@ -80,6 +83,7 @@ impl Jwt {
 pub struct JwtInner {
     audience: String,
     max_duration_sec: usize,
+    timestamp_timeout_sec: usize,
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
 }
@@ -90,6 +94,7 @@ impl TryFrom<&JwtConfig> for JwtInner {
         Self::from_base64_secret(
             &config.audience,
             config.max_duration_sec,
+            config.timestamp_timeout_sec,
             &config.secret_base64,
         )
     }
@@ -97,10 +102,16 @@ impl TryFrom<&JwtConfig> for JwtInner {
 
 impl JwtInner {
     /// Create a new JWT
-    pub fn from_secret(aud: impl Into<String>, max_duration_sec: usize, secret: &[u8]) -> Self {
+    pub fn from_secret(
+        aud: impl Into<String>,
+        max_duration_sec: usize,
+        timestamp_timeout_sec: usize,
+        secret: &[u8],
+    ) -> Self {
         Self {
             audience: aud.into(),
             max_duration_sec,
+            timestamp_timeout_sec,
             encoding_key: EncodingKey::from_secret(secret),
             decoding_key: DecodingKey::from_secret(secret),
         }
@@ -110,11 +121,13 @@ impl JwtInner {
     pub fn from_base64_secret(
         aud: impl Into<String>,
         max_duration_sec: usize,
+        timestamp_timeout_sec: usize,
         secret: &str,
     ) -> jsonwebtoken::errors::Result<Self> {
         Ok(Self {
             audience: aud.into(),
             max_duration_sec,
+            timestamp_timeout_sec,
             encoding_key: EncodingKey::from_base64_secret(secret)?,
             decoding_key: DecodingKey::from_base64_secret(secret)?,
         })
@@ -147,6 +160,11 @@ impl JwtInner {
     /// Get the max duration in seconds
     pub fn max_duration_sec(&self) -> usize {
         self.max_duration_sec
+    }
+
+    /// Get the timestamp timeout in seconds
+    pub fn timestamp_timeout_sec(&self) -> usize {
+        self.timestamp_timeout_sec
     }
 }
 
