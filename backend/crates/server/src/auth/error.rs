@@ -20,6 +20,9 @@ pub enum Error {
     /// JWT verification failed
     #[error("JWT verification failed: {0}")]
     JwtVerificationFailed(#[from] jsonwebtoken::errors::Error),
+    /// Invalid duration
+    #[error("Invalid duration, expected: [0, {0}], got: {1}")]
+    InvalidDuration(usize, usize),
 }
 
 /// Result type for the auth module

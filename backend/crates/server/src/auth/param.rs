@@ -7,14 +7,14 @@ use solana_sdk::signature::Signature;
 
 /// Hmac request
 #[derive(Debug, Serialize, Deserialize)]
-pub struct HmacRequest {
+pub struct ChallengeRequest {
     /// Public key
     pub pub_key: Pubkey,
 }
 
 /// Nonce response
 #[derive(Debug, Serialize, Deserialize)]
-pub struct HmacResponse {
+pub struct ChallengeResponse {
     /// HMAC
     pub hmac: String,
     /// Timestamp

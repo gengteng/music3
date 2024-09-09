@@ -5,26 +5,47 @@ use crate::auth::{
     claim::Claim,
     error::{Error, Result},
 };
+use base64::Engine;
 use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashSet;
+use std::ops::Deref;
 use std::sync::Arc;
 
 /// JWT configuration
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct JwtConfig {
     /// Audience
     pub audience: String,
     /// Secret in base64
-    pub secret_bas64: String,
+    pub secret_base64: String,
+    /// Max duration in seconds
+    pub max_duration_sec: usize,
+}
+
+impl Default for JwtConfig {
+    fn default() -> Self {
+        Self {
+            audience: "music3".to_string(),
+            secret_base64: base64::engine::general_purpose::STANDARD.encode("music3-jwt-secret"),
+            max_duration_sec: 86400,
+        }
+    }
 }
 
 /// JSON Web Token Context
 #[derive(Clone)]
 pub struct Jwt {
     inner: Arc<JwtInner>,
+}
+
+impl Deref for Jwt {
+    type Target = JwtInner;
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
 }
 
 impl From<JwtInner> for Jwt {
@@ -45,7 +66,7 @@ impl TryFrom<&JwtConfig> for Jwt {
 impl Jwt {
     /// Create a new JWT
     pub fn sign(&self, claims: &Claim) -> Result<String> {
-        Ok(self.inner.sign(claims)?)
+        self.inner.sign(claims)
     }
 
     /// Verify a JWT
@@ -58,6 +79,7 @@ impl Jwt {
 #[derive(Clone)]
 pub struct JwtInner {
     audience: String,
+    max_duration_sec: usize,
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
 }
@@ -65,18 +87,20 @@ pub struct JwtInner {
 impl TryFrom<&JwtConfig> for JwtInner {
     type Error = jsonwebtoken::errors::Error;
     fn try_from(config: &JwtConfig) -> jsonwebtoken::errors::Result<Self> {
-        Ok(Self::from_base64_secret(
+        Self::from_base64_secret(
             &config.audience,
-            &config.secret_bas64,
-        )?)
+            config.max_duration_sec,
+            &config.secret_base64,
+        )
     }
 }
 
 impl JwtInner {
     /// Create a new JWT
-    pub fn from_secret(aud: impl Into<String>, secret: &[u8]) -> Self {
+    pub fn from_secret(aud: impl Into<String>, max_duration_sec: usize, secret: &[u8]) -> Self {
         Self {
             audience: aud.into(),
+            max_duration_sec,
             encoding_key: EncodingKey::from_secret(secret),
             decoding_key: DecodingKey::from_secret(secret),
         }
@@ -85,10 +109,12 @@ impl JwtInner {
     /// Create a new JWT from base64 secret
     pub fn from_base64_secret(
         aud: impl Into<String>,
+        max_duration_sec: usize,
         secret: &str,
     ) -> jsonwebtoken::errors::Result<Self> {
         Ok(Self {
             audience: aud.into(),
+            max_duration_sec,
             encoding_key: EncodingKey::from_base64_secret(secret)?,
             decoding_key: DecodingKey::from_base64_secret(secret)?,
         })
@@ -113,11 +139,14 @@ impl JwtInner {
         let mut audiences = HashSet::new();
         audiences.insert(self.audience.clone());
         validation.aud = Some(audiences);
-        Ok(
-            jsonwebtoken::decode::<C>(token, &self.decoding_key, &validation)
-                .map(|data| data.claims)
-                .map_err(Error::JwtVerificationFailed)?,
-        )
+        jsonwebtoken::decode::<C>(token, &self.decoding_key, &validation)
+            .map(|data| data.claims)
+            .map_err(Error::JwtVerificationFailed)
+    }
+
+    /// Get the max duration in seconds
+    pub fn max_duration_sec(&self) -> usize {
+        self.max_duration_sec
     }
 }
 
@@ -137,7 +166,7 @@ mod tests {
             sub: String,
             exp: usize,
         }
-        let jwt = JwtInner::from_secret("music3", b"secret");
+        let jwt = JwtInner::from_secret("music3", 86400, b"secret");
         let claim = Claim {
             aud: "music3".to_string(),
             sub: keypair.pubkey().to_string(),

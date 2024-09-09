@@ -4,12 +4,19 @@ use crate::auth::jwt::JwtConfig;
 use serde::{Deserialize, Serialize};
 
 /// Authorization configuration
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct AuthConfig {
     /// JWT configuration
     pub jwt: JwtConfig,
     /// HMAC secret
     pub hmac_secret: String,
-    /// Max duration in seconds
-    pub max_duration_sec: usize,
+}
+
+impl Default for AuthConfig {
+    fn default() -> Self {
+        Self {
+            jwt: JwtConfig::default(),
+            hmac_secret: "music3-hmac-secret".to_string(),
+        }
+    }
 }
