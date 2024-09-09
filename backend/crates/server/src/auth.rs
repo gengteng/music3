@@ -56,6 +56,12 @@ impl Authorizer {
 
     /// Verify the auth request
     pub fn verify_auth_request(&self, request: &AuthRequest) -> bool {
+        if !self
+            .hmac_cloned()
+            .verify(&request.pub_key, &request.hmac, request.timestamp)
+        {
+            return false;
+        }
         let message = format!("{}{}", request.hmac, request.timestamp);
         request
             .signature
@@ -139,8 +145,8 @@ mod tests {
             })
             .await;
 
-        let ChallengeResponse { hmac, timestamp } = response.json();
-        let message = format!("{}{}", hmac, timestamp);
+        let challenge: ChallengeResponse = response.json();
+        let message = challenge.build_message();
         let signature = keypair.sign_message(message.as_bytes());
 
         let duration = thread_rng().gen_range(0..max_duration_sec);
@@ -149,15 +155,16 @@ mod tests {
             .json(&AuthRequest {
                 pub_key: keypair.pubkey(),
                 signature,
-                hmac,
-                timestamp,
+                hmac: challenge.hmac.clone(),
+                timestamp: challenge.timestamp,
                 duration,
             })
             .await;
 
+        assert_eq!(response.status_code(), 200);
         let AuthResponse { pub_key, jwt, exp } = response.json();
         assert_eq!(pub_key, keypair.pubkey());
-        assert!(exp >= timestamp + duration);
+        assert!(exp >= challenge.timestamp + duration);
 
         let claim = authorizer.jwt.verify(&jwt).unwrap();
         assert_eq!(claim.sub, keypair.pubkey().to_string());

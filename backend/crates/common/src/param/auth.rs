@@ -22,6 +22,13 @@ pub struct ChallengeResponse {
     pub timestamp: usize,
 }
 
+impl ChallengeResponse {
+    /// Build the message to sign
+    pub fn build_message(&self) -> String {
+        format!("{}{}", self.hmac, self.timestamp)
+    }
+}
+
 /// Authorization request
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthRequest {

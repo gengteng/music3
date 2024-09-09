@@ -2465,6 +2465,10 @@ version = "0.1.0"
 dependencies = [
  "music3-common",
  "reqwest 0.12.7",
+ "solana-sdk",
+ "thiserror",
+ "tokio",
+ "url",
 ]
 
 [[package]]
