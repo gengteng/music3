@@ -5,8 +5,8 @@ use crate::auth::{
     claim::Claim,
     error::{Error, Result},
 };
-use base64::Engine;
 use jsonwebtoken::{DecodingKey, EncodingKey};
+use music3_common::utils::Base64;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -20,7 +20,7 @@ pub struct JwtConfig {
     /// Audience
     pub audience: String,
     /// Secret in base64
-    pub secret_base64: String,
+    pub secret: Base64,
     /// Max duration in seconds
     pub max_duration_sec: usize,
     /// Timestamp timeout
@@ -31,7 +31,7 @@ impl Default for JwtConfig {
     fn default() -> Self {
         Self {
             audience: "music3".to_string(),
-            secret_base64: base64::engine::general_purpose::STANDARD.encode("music3-jwt-secret"),
+            secret: Base64::from(b"music3-jwt-secret"),
             max_duration_sec: 86400,
             timestamp_timeout_sec: 120,
         }
@@ -59,10 +59,9 @@ impl From<JwtInner> for Jwt {
     }
 }
 
-impl TryFrom<&JwtConfig> for Jwt {
-    type Error = Error;
-    fn try_from(config: &JwtConfig) -> Result<Self> {
-        Ok(Self::from(JwtInner::try_from(config)?))
+impl From<&JwtConfig> for Jwt {
+    fn from(config: &JwtConfig) -> Self {
+        Self::from(JwtInner::from(config))
     }
 }
 
@@ -88,14 +87,13 @@ pub struct JwtInner {
     decoding_key: DecodingKey,
 }
 
-impl TryFrom<&JwtConfig> for JwtInner {
-    type Error = jsonwebtoken::errors::Error;
-    fn try_from(config: &JwtConfig) -> jsonwebtoken::errors::Result<Self> {
-        Self::from_base64_secret(
+impl From<&JwtConfig> for JwtInner {
+    fn from(config: &JwtConfig) -> Self {
+        Self::from_secret(
             &config.audience,
             config.max_duration_sec,
             config.timestamp_timeout_sec,
-            &config.secret_base64,
+            config.secret.as_ref(),
         )
     }
 }
@@ -115,22 +113,6 @@ impl JwtInner {
             encoding_key: EncodingKey::from_secret(secret),
             decoding_key: DecodingKey::from_secret(secret),
         }
-    }
-
-    /// Create a new JWT from base64 secret
-    pub fn from_base64_secret(
-        aud: impl Into<String>,
-        max_duration_sec: usize,
-        timestamp_timeout_sec: usize,
-        secret: &str,
-    ) -> jsonwebtoken::errors::Result<Self> {
-        Ok(Self {
-            audience: aud.into(),
-            max_duration_sec,
-            timestamp_timeout_sec,
-            encoding_key: EncodingKey::from_base64_secret(secret)?,
-            decoding_key: DecodingKey::from_base64_secret(secret)?,
-        })
     }
 
     /// Create a new JWT

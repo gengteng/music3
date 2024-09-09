@@ -1,6 +1,7 @@
 //! # Authorization parameters
 //!
 
+use crate::utils::Base64;
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::Signature;
@@ -17,15 +18,15 @@ pub struct ChallengeRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChallengeResponse {
     /// HMAC
-    pub hmac: String,
+    pub hmac: Base64,
     /// Timestamp
     pub timestamp: usize,
 }
 
 impl ChallengeResponse {
     /// Build the message to sign
-    pub fn build_message(&self) -> String {
-        format!("{}{}", self.hmac, self.timestamp)
+    pub fn build_message(&self) -> Vec<u8> {
+        build_message(&self.hmac, self.timestamp)
     }
 }
 
@@ -39,11 +40,18 @@ pub struct AuthRequest {
     #[serde(with = "crate::utils::serde_str")]
     pub signature: Signature,
     /// HMAC
-    pub hmac: String,
+    pub hmac: Base64,
     /// Timestamp
     pub timestamp: usize,
     /// Duration
     pub duration: usize,
+}
+
+impl AuthRequest {
+    /// Build the message to verify
+    pub fn build_message(&self) -> Vec<u8> {
+        build_message(&self.hmac, self.timestamp)
+    }
 }
 
 /// Authorization response
@@ -56,4 +64,11 @@ pub struct AuthResponse {
     pub jwt: String,
     /// Expiration
     pub exp: usize,
+}
+
+fn build_message(hmac: &Base64, timestamp: usize) -> Vec<u8> {
+    let mut vec = Vec::with_capacity(hmac.len() + size_of::<u64>());
+    vec.extend_from_slice(hmac.as_ref());
+    vec.extend_from_slice(&timestamp.to_be_bytes());
+    vec
 }

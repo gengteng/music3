@@ -71,7 +71,7 @@ mod tests {
         let client = Client::default();
         let keypair = Keypair::new();
         let challenge = client.get_challenge(keypair.pubkey()).await.unwrap();
-        let signature = keypair.sign_message(challenge.build_message().as_bytes());
+        let signature = keypair.sign_message(&challenge.build_message());
         let request = AuthRequest {
             pub_key: keypair.pubkey(),
             signature,

@@ -1,8 +1,8 @@
 //! # HMAC
 
-use base64::Engine;
 use hmac::Mac;
 use jsonwebtoken::get_current_timestamp;
+use music3_common::utils::Base64;
 use sha2::Sha256;
 use solana_sdk::pubkey::Pubkey;
 
@@ -32,28 +32,29 @@ impl<const L: usize> TryFrom<&[u8; L]> for Hmac {
 
 impl Hmac {
     /// Create a new HMAC and a timestamp
-    pub fn generate(mut self, pub_key: &Pubkey) -> (String, usize) {
-        let timestamp = get_current_timestamp();
-        let message = format!("{}{}", pub_key, timestamp);
-        self.hmac_sha256.update(message.as_bytes());
+    pub fn generate(mut self, pub_key: &Pubkey) -> (Base64, usize) {
+        let timestamp = get_current_timestamp() as usize;
+        let message = Self::build_message(pub_key, timestamp);
+        self.hmac_sha256.update(&message);
         let result = self.hmac_sha256.finalize();
         let code_bytes = result.into_bytes();
-        (
-            base64::engine::general_purpose::STANDARD.encode(code_bytes),
-            timestamp as usize,
-        )
+        (Base64(code_bytes.to_vec()), timestamp as usize)
     }
 
     /// Verify the HMAC
-    pub fn verify(mut self, pub_key: &Pubkey, hmac: &str, timestamp: usize) -> bool {
-        let message = format!("{}{}", pub_key, timestamp);
-        self.hmac_sha256.update(message.as_bytes());
+    pub fn verify(mut self, pub_key: &Pubkey, hmac: &Base64, timestamp: usize) -> bool {
+        let message = Self::build_message(pub_key, timestamp);
+        self.hmac_sha256.update(&message);
         let result = self.hmac_sha256.finalize();
         let code_bytes = result.into_bytes();
-        let Ok(code) = base64::engine::general_purpose::STANDARD.decode(hmac.as_bytes()) else {
-            return false;
-        };
-        code == *code_bytes
+        hmac.as_slice().eq(code_bytes.as_slice())
+    }
+
+    fn build_message(pub_key: &Pubkey, timestamp: usize) -> Vec<u8> {
+        let mut vec = Vec::with_capacity(size_of::<Pubkey>() + size_of::<u64>());
+        vec.extend_from_slice(pub_key.as_ref());
+        vec.extend_from_slice(&timestamp.to_be_bytes());
+        vec
     }
 }
 

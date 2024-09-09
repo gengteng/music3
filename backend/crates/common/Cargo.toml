@@ -7,3 +7,4 @@ license = "MIT or Apache-2.0"
 [dependencies]
 solana-sdk = "2.0.9"
 serde = { workspace = true, features = ["derive"] }
+base64 = "0.22.1"

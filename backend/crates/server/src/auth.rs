@@ -62,10 +62,8 @@ impl Authorizer {
         {
             return false;
         }
-        let message = format!("{}{}", request.hmac, request.timestamp);
-        request
-            .signature
-            .verify(request.pub_key.as_ref(), message.as_bytes())
+        let message = request.build_message();
+        request.signature.verify(request.pub_key.as_ref(), &message)
     }
 
     /// Authorize the request
@@ -147,7 +145,7 @@ mod tests {
 
         let challenge: ChallengeResponse = response.json();
         let message = challenge.build_message();
-        let signature = keypair.sign_message(message.as_bytes());
+        let signature = keypair.sign_message(&message);
 
         let duration = thread_rng().gen_range(0..max_duration_sec);
         let response = server

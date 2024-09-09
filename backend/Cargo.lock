@@ -2475,6 +2475,7 @@ dependencies = [
 name = "music3-common"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "serde",
  "solana-sdk",
 ]
