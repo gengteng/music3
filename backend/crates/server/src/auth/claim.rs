@@ -17,21 +17,21 @@ pub struct Claim {
     /// Subject
     pub sub: String,
     /// Expiration
-    pub exp: usize,
+    pub exp: u64,
 }
 
 impl Claim {
     /// Create a new claim
-    pub fn create(sub: impl Into<String>, duration_sec: usize) -> Self {
+    pub fn create(sub: impl Into<String>, duration_sec: u64) -> Self {
         Self {
             sub: sub.into(),
-            exp: get_current_timestamp() as usize + duration_sec,
+            exp: get_current_timestamp() + duration_sec,
         }
     }
 
     /// Check if the token is expired
     pub fn expired(&self) -> bool {
-        self.exp < get_current_timestamp() as usize
+        self.exp < get_current_timestamp()
     }
 }
 

@@ -22,7 +22,7 @@ pub enum Error {
     JwtVerificationFailed(#[from] jsonwebtoken::errors::Error),
     /// Invalid duration
     #[error("Invalid duration, expected: [0, {0}], got: {1}")]
-    InvalidDuration(usize, usize),
+    InvalidDuration(u64, u64),
     /// Invalid timestamp
     #[error("Invalid Timestamp")]
     InvalidTimestamp,

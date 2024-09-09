@@ -20,7 +20,7 @@ pub struct ChallengeResponse {
     /// HMAC
     pub hmac: Base64,
     /// Timestamp
-    pub timestamp: usize,
+    pub timestamp: u64,
 }
 
 impl ChallengeResponse {
@@ -42,9 +42,9 @@ pub struct AuthRequest {
     /// HMAC
     pub hmac: Base64,
     /// Timestamp
-    pub timestamp: usize,
+    pub timestamp: u64,
     /// Duration
-    pub duration: usize,
+    pub duration: u64,
 }
 
 impl AuthRequest {
@@ -63,10 +63,10 @@ pub struct AuthResponse {
     /// JWT
     pub jwt: String,
     /// Expiration
-    pub exp: usize,
+    pub exp: u64,
 }
 
-fn build_message(hmac: &Base64, timestamp: usize) -> Vec<u8> {
+fn build_message(hmac: &Base64, timestamp: u64) -> Vec<u8> {
     let mut vec = Vec::with_capacity(hmac.len() + size_of::<u64>());
     vec.extend_from_slice(hmac.as_ref());
     vec.extend_from_slice(&timestamp.to_be_bytes());

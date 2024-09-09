@@ -22,9 +22,9 @@ pub struct JwtConfig {
     /// Secret in base64
     pub secret: Base64,
     /// Max duration in seconds
-    pub max_duration_sec: usize,
+    pub max_duration_sec: u64,
     /// Timestamp timeout
-    pub timestamp_timeout_sec: usize,
+    pub timestamp_timeout_sec: u64,
 }
 
 impl Default for JwtConfig {
@@ -81,8 +81,8 @@ impl Jwt {
 #[derive(Clone)]
 pub struct JwtInner {
     audience: String,
-    max_duration_sec: usize,
-    timestamp_timeout_sec: usize,
+    max_duration_sec: u64,
+    timestamp_timeout_sec: u64,
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
 }
@@ -102,8 +102,8 @@ impl JwtInner {
     /// Create a new JWT
     pub fn from_secret(
         aud: impl Into<String>,
-        max_duration_sec: usize,
-        timestamp_timeout_sec: usize,
+        max_duration_sec: u64,
+        timestamp_timeout_sec: u64,
         secret: &[u8],
     ) -> Self {
         Self {
@@ -140,12 +140,12 @@ impl JwtInner {
     }
 
     /// Get the max duration in seconds
-    pub fn max_duration_sec(&self) -> usize {
+    pub fn max_duration_sec(&self) -> u64 {
         self.max_duration_sec
     }
 
     /// Get the timestamp timeout in seconds
-    pub fn timestamp_timeout_sec(&self) -> usize {
+    pub fn timestamp_timeout_sec(&self) -> u64 {
         self.timestamp_timeout_sec
     }
 }
@@ -164,13 +164,13 @@ mod tests {
         struct Claim {
             aud: String,
             sub: String,
-            exp: usize,
+            exp: u64,
         }
         let jwt = JwtInner::from_secret("music3", 86400, 120, b"secret");
         let claim = Claim {
             aud: "music3".to_string(),
             sub: keypair.pubkey().to_string(),
-            exp: (get_current_timestamp() - Validation::default().leeway) as usize,
+            exp: get_current_timestamp() - Validation::default().leeway,
         };
         println!("claim: {:?}", claim);
         let token = jwt.sign(&claim).unwrap();

@@ -32,17 +32,17 @@ impl<const L: usize> TryFrom<&[u8; L]> for Hmac {
 
 impl Hmac {
     /// Create a new HMAC and a timestamp
-    pub fn generate(mut self, pub_key: &Pubkey) -> (Base64, usize) {
-        let timestamp = get_current_timestamp() as usize;
+    pub fn generate(mut self, pub_key: &Pubkey) -> (Base64, u64) {
+        let timestamp = get_current_timestamp();
         let message = Self::build_message(pub_key, timestamp);
         self.hmac_sha256.update(&message);
         let result = self.hmac_sha256.finalize();
         let code_bytes = result.into_bytes();
-        (Base64(code_bytes.to_vec()), timestamp as usize)
+        (Base64(code_bytes.to_vec()), timestamp)
     }
 
     /// Verify the HMAC
-    pub fn verify(mut self, pub_key: &Pubkey, hmac: &Base64, timestamp: usize) -> bool {
+    pub fn verify(mut self, pub_key: &Pubkey, hmac: &Base64, timestamp: u64) -> bool {
         let message = Self::build_message(pub_key, timestamp);
         self.hmac_sha256.update(&message);
         let result = self.hmac_sha256.finalize();
@@ -50,7 +50,7 @@ impl Hmac {
         hmac.as_slice().eq(code_bytes.as_slice())
     }
 
-    fn build_message(pub_key: &Pubkey, timestamp: usize) -> Vec<u8> {
+    fn build_message(pub_key: &Pubkey, timestamp: u64) -> Vec<u8> {
         let mut vec = Vec::with_capacity(size_of::<Pubkey>() + size_of::<u64>());
         vec.extend_from_slice(pub_key.as_ref());
         vec.extend_from_slice(&timestamp.to_be_bytes());

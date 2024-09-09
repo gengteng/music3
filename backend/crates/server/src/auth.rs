@@ -3,7 +3,7 @@
 //! # 鉴权流程：
 //! 1. 客户端发送 PubKey 给服务端。
 //! 2. 服务端返回基于 PubKey 和服务端当前时间戳生成的 HMAC，同时返回使用的时间戳。
-//! 3. 客户端将 HMAC 和服务端返回的时间戳使用私钥签名，即 sign(base64(hmac) + toString(timestamp))。
+//! 3. 客户端将 HMAC 和服务端返回的时间戳使用私钥签名，即 `sign(hmac + timestamp.to_be_bytes())`。
 //! 4. 客户端发送 PubKey、签名、时间戳和期望的 JWT 有效期给服务端。
 //! 5. 服务端验证时间戳是否是最近的时间（比如 5 分钟），验证 HMAC 和签名，通过后下发 JWT。
 //!
@@ -50,8 +50,8 @@ impl Authorizer {
     }
 
     /// Check if the timestamp is valid
-    pub fn is_valid_timestamp(&self, timestamp: usize) -> bool {
-        timestamp + self.jwt.timestamp_timeout_sec() >= get_current_timestamp() as usize
+    pub fn is_valid_timestamp(&self, timestamp: u64) -> bool {
+        timestamp + self.jwt.timestamp_timeout_sec() >= get_current_timestamp()
     }
 
     /// Verify the auth request
