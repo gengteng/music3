@@ -184,7 +184,7 @@ mod tests {
             sub: String,
             exp: usize,
         }
-        let jwt = JwtInner::from_secret("music3", 86400, b"secret");
+        let jwt = JwtInner::from_secret("music3", 86400, 120, b"secret");
         let claim = Claim {
             aud: "music3".to_string(),
             sub: keypair.pubkey().to_string(),
