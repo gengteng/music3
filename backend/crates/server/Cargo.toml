@@ -11,8 +11,8 @@ axum-valid = { version = "0.20.0", features = ["validify", "basic", "aide"], def
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 music3-common = { path = "../common" }
-solana-client = "2.0.8"
-solana-sdk = "2.0.8"
+solana-client = "2.0.9"
+solana-sdk = "2.0.9"
 jsonwebtoken = "9.3.0"
 chrono = { workspace = true }
 serde = { workspace = true }

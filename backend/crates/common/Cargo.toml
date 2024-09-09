@@ -5,4 +5,5 @@ edition = "2021"
 license = "MIT or Apache-2.0"
 
 [dependencies]
+solana-sdk = "2.0.9"
 serde = { workspace = true, features = ["derive"] }

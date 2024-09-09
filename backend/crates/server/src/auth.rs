@@ -10,11 +10,11 @@
 
 use crate::auth::claim::Claim;
 use crate::auth::conf::AuthConfig;
-use crate::auth::param::ChallengeRequest;
 use axum::extract::State;
 use axum::Json;
 use error::Result;
 use jsonwebtoken::get_current_timestamp;
+use music3_common::param::auth::{AuthRequest, AuthResponse, ChallengeRequest, ChallengeResponse};
 use std::sync::Arc;
 
 pub mod claim;
@@ -22,7 +22,6 @@ pub mod conf;
 pub mod error;
 pub mod hmac;
 pub mod jwt;
-pub mod param;
 
 /// Authorizer
 #[derive(Clone)]
@@ -45,12 +44,9 @@ impl Authorizer {
     }
 
     /// Generate a challenge
-    pub fn generate_challenge(
-        &self,
-        pub_key: &solana_sdk::pubkey::Pubkey,
-    ) -> param::ChallengeResponse {
+    pub fn generate_challenge(&self, pub_key: &solana_sdk::pubkey::Pubkey) -> ChallengeResponse {
         let (hmac, timestamp) = self.hmac_cloned().generate(pub_key);
-        param::ChallengeResponse { hmac, timestamp }
+        ChallengeResponse { hmac, timestamp }
     }
 
     /// Check if the timestamp is valid
@@ -58,8 +54,16 @@ impl Authorizer {
         timestamp + self.jwt.timestamp_timeout_sec() >= get_current_timestamp() as usize
     }
 
+    /// Verify the auth request
+    pub fn verify_auth_request(&self, request: &AuthRequest) -> bool {
+        let message = format!("{}{}", request.hmac, request.timestamp);
+        request
+            .signature
+            .verify(request.pub_key.as_ref(), message.as_bytes())
+    }
+
     /// Authorize the request
-    pub fn authorize(&self, request: &param::AuthRequest) -> Result<param::AuthResponse> {
+    pub fn authorize(&self, request: &AuthRequest) -> Result<AuthResponse> {
         if self.jwt.max_duration_sec() < request.duration {
             return Err(error::Error::InvalidDuration(
                 request.duration,
@@ -69,12 +73,12 @@ impl Authorizer {
         if !self.is_valid_timestamp(request.timestamp) {
             return Err(error::Error::InvalidTimestamp);
         }
-        if !request.verify() {
+        if !self.verify_auth_request(request) {
             return Err(error::Error::InvalidSignature);
         }
         let claim = Claim::create(request.pub_key.to_string(), request.duration);
         let jwt = self.jwt.sign(&claim)?;
-        Ok(param::AuthResponse {
+        Ok(AuthResponse {
             pub_key: request.pub_key,
             jwt,
             exp: claim.exp,
@@ -86,15 +90,15 @@ impl Authorizer {
 pub async fn get_challenge(
     State(authorizer): State<Authorizer>,
     Json(request): Json<ChallengeRequest>,
-) -> Json<param::ChallengeResponse> {
+) -> Json<ChallengeResponse> {
     Json(authorizer.generate_challenge(&request.pub_key))
 }
 
 /// Authorize
 pub async fn authorize(
     authorizer: State<Authorizer>,
-    request: Json<param::AuthRequest>,
-) -> Result<Json<param::AuthResponse>> {
+    request: Json<AuthRequest>,
+) -> Result<Json<AuthResponse>> {
     Ok(Json(authorizer.authorize(&request)?))
 }
 
@@ -102,7 +106,6 @@ pub async fn authorize(
 mod tests {
     use super::*;
     use crate::auth::jwt::JwtConfig;
-    use crate::auth::param::ChallengeResponse;
     use axum::routing::post;
     use axum::Router;
     use axum_test::TestServer;
@@ -143,7 +146,7 @@ mod tests {
         let duration = thread_rng().gen_range(0..max_duration_sec);
         let response = server
             .post("/authorize")
-            .json(&param::AuthRequest {
+            .json(&AuthRequest {
                 pub_key: keypair.pubkey(),
                 signature,
                 hmac,
@@ -152,7 +155,7 @@ mod tests {
             })
             .await;
 
-        let param::AuthResponse { pub_key, jwt, exp } = response.json();
+        let AuthResponse { pub_key, jwt, exp } = response.json();
         assert_eq!(pub_key, keypair.pubkey());
         assert!(exp >= timestamp + duration);
 
