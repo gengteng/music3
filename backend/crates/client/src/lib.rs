@@ -2,6 +2,7 @@
 #![deny(unsafe_code, missing_docs, clippy::unwrap_used)]
 
 pub mod error;
+pub mod solana;
 
 use error::Result;
 use music3_common::param::auth::{AuthRequest, AuthResponse, ChallengeRequest, ChallengeResponse};
