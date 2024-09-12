@@ -15,6 +15,12 @@ futures = "0.3.30"
 chrono = { version = "0.4" }
 chrono-tz = "0.10.0"
 
+# Solana
+solana-client = "2.0.9"
+solana-sdk = "2.0.9"
+solana-quic-client = "2.0.9"
+solana-rpc-client-api = "2.0.9"
+
 [patch.crates-io.curve25519-dalek]
 # This patch is needed to fix this issue:
 # https://github.com/solana-labs/solana/issues/26688

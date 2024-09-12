@@ -8,3 +8,4 @@ license = "MIT or Apache-2.0"
 music3-server = { path = "../server" }
 shuttle-axum = "0.47.0"
 shuttle-runtime = "0.47.0"
+zeroize = "1.8.1"

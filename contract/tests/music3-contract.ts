@@ -1,12 +1,12 @@
-import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
-import { Contract } from "../target/types/contract";
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { Music3Contract } from "../target/types/music3_contract";
 
-describe("contract", () => {
+describe("music3-contract", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.Contract as Program<Contract>;
+  const program = anchor.workspace.Music3Contract as Program<Music3Contract>;
 
   it("Is initialized!", async () => {
     // Add your test here.
