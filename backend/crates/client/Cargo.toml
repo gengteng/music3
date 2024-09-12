@@ -11,7 +11,9 @@ reqwest = { version = "0.12.7", default-features = false, features = ["json", "r
 solana-sdk = "2.0.9"
 solana-client = "2.0.9"
 solana-quic-client = "2.0.9"
+solana-rpc-client-api = "2.0.9"
 url = "2.5.2"
+futures = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

@@ -2463,10 +2463,12 @@ dependencies = [
 name = "music3-client"
 version = "0.1.0"
 dependencies = [
+ "futures",
  "music3-common",
  "reqwest 0.12.7",
  "solana-client",
  "solana-quic-client",
+ "solana-rpc-client-api",
  "solana-sdk",
  "thiserror",
  "tokio",
