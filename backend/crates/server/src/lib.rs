@@ -5,3 +5,4 @@ pub mod auth;
 pub mod conf;
 pub mod error;
 pub mod route;
+pub mod upload;

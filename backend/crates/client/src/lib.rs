@@ -60,6 +60,11 @@ impl Client {
 
         Ok(response.json().await?)
     }
+
+    /// Upload a music file
+    pub async fn upload_music(&self, file: Vec<u8>) -> Result<()> {
+        todo!()
+    }
 }
 
 #[cfg(test)]

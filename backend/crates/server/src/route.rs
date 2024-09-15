@@ -18,7 +18,12 @@ pub fn router(config: Config) -> anyhow::Result<Router> {
                 .route("/challenge", post(crate::auth::get_challenge))
                 .route("/authorize", post(crate::auth::authorize)),
         )
+        .nest(
+            "/file",
+            Router::new().route("/upload", post(crate::upload::upload)),
+        )
         .with_state(authorizer);
+
     Ok(router)
 }
 
