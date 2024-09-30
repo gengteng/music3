@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT or Apache-2.0"
 
 [dependencies]
-axum = "0.7.5"
+axum = { version = "0.7", features = ["multipart"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-valid = { version = "0.20.0", features = ["validify", "basic", "aide"], default-features = false }
 thiserror = { workspace = true }
@@ -23,7 +23,8 @@ base64 = "0.22.1"
 rand = "0.8.5"
 hmac = "0.12.1"
 sha2 = "0.10.8"
-
+uuid = { version = "1.10.0", features = ["v4"] }
+tokio = {workspace = true, features = ["fs"] }
 [dev-dependencies]
 axum-test = "15.7.1"
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

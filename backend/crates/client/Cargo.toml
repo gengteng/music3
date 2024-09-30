@@ -7,7 +7,7 @@ license = "MIT or Apache-2.0"
 [dependencies]
 thiserror = { workspace = true }
 music3-common = { path = "../common" }
-reqwest = { version = "0.12.7", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12.7", default-features = false, features = ["json", "rustls-tls", "multipart"] }
 solana-sdk = { workspace = true }
 solana-client = { workspace = true }
 solana-quic-client = { workspace = true }

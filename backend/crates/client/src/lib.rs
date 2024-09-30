@@ -3,10 +3,9 @@
 
 pub mod error;
 pub mod solana;
-
 use error::Result;
 use music3_common::param::auth::{AuthRequest, AuthResponse, ChallengeRequest, ChallengeResponse};
-use reqwest::Url;
+use reqwest::{multipart, Url};
 use solana_sdk::pubkey::Pubkey;
 
 /// Music3 Client
@@ -63,7 +62,20 @@ impl Client {
 
     /// Upload a music file
     pub async fn upload_music(&self, file: Vec<u8>) -> Result<()> {
-        todo!()
+        // 创建多部分表单
+        let form = multipart::Form::new().part(
+            "file",
+            multipart::Part::bytes(file).file_name("default.mp3"),
+        );
+
+        // 发送请求
+        let url = self.base_url.join("/upload")?;
+        let response = self.client.post(url).multipart(form).send().await?;
+        let status = response.status();
+        if !status.is_success() {
+            return Err(error::Error::Non2xxResponse(status, response.text().await?));
+        }
+        Ok(())
     }
 }
 
